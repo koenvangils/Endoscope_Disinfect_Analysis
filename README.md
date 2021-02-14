@@ -1,7 +1,7 @@
 # Endoscope Disinfect Analysis
 
 ![Example boxplot](ENF-P4.png)
-![Example violinplot](ENF-P4.png)
+![Example violinplot](ENF-P4_violin.png)
 
 This script analyzes raw export data from Wassenburg Process Manager to generate box plots and violin plots containing per weekday use/disinfection frequency of flexible endoscopes. It automatically generates plots for every scope type in the export data. This allows for an accurate determination of the number of required endoscopes in a clinical setting.
 
