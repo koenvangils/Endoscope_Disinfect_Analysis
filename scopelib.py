@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import datetime
 import matplotlib.pyplot as plt
+import seaborn as sns
 
 graphfontsize=9
 
@@ -30,7 +31,9 @@ def createfrequencytable(daterange,table1,table2,table3):
         weekday=date.dayofweek
         perdate=len(table1[table1.index.date==date.date()])+len(table2[table2.index.date==date.date()])+len(table3[table3.index.date==date.date()])
         frequencytable[weekday].append(perdate)
-    return frequencytable
+    frequencytablepandas=pd.DataFrame(frequencytable).transpose()
+    frequencytablepandas.columns=['Mo','Tu','We','Th','Fr','Sa','Su']
+    return frequencytablepandas
 
 def freqperweekday(table,scopetype,start,end):
     table=table[(table.index >= start) & (table.index < end)]
@@ -65,27 +68,44 @@ def boxplot(rawdata,scopetype,plotfile,start,end,qtyoftype=None):
     start,end=correctdaterange(rawdata[rawdata['Endoscooptype'].isin(scopetype)],start,end)
     frequencytable,qtyoftypeinlog=freqperweekday(rawdata,scopetype,start,end)
     fig, ax = plt.subplots()
-    ax.boxplot((frequencytable[0], frequencytable[1], frequencytable[2], frequencytable[3], frequencytable[4], frequencytable[5], frequencytable[6]),showmeans=True,whis=[0,100],zorder=2)
+    ax.boxplot(frequencytable.dropna(),showmeans=True,whis=[0,100],zorder=2)
     if qtyoftype:
         ax.set_title(plotfile.split('/')[-1]+'\nNr of scopes: '+str(qtyoftype)+' (Ultimo), '+str(qtyoftypeinlog)+' (Process Manager)\n Date range:'+str(start.date())+' - '+str(end.date()),fontsize=graphfontsize) 
     else:
         qtyoftype=qtyoftypeinlog
         ax.set_title(plotfile.split('/')[-1]+'\nNr of scopes in log: '+str(qtyoftype)+'\n Date range:'+str(start.date())+' - '+str(end.date()),fontsize=graphfontsize)
-    ax.set_xticks(np.arange(1,8))
-    ax.set_xticklabels(('Mo','Tu','We','Th','Fr','Sa','Su'))
     ax.set_ylabel('Use frequency of this type')
+    ax.set_xticklabels(frequencytable.columns)
     secax = ax.secondary_yaxis('right', functions=(lambda x: x / qtyoftype, lambda x: x * qtyoftype))
     secax.set_ylabel('Use frequency per endoscope of this type')
 
     plt.savefig(plotfile+'.png')
     plt.close()
 
+def violinplot(rawdata,scopetype,plotfile,start,end,qtyoftype=None):
+    start,end=correctdaterange(rawdata[rawdata['Endoscooptype'].isin(scopetype)],start,end)
+    frequencytable,qtyoftypeinlog=freqperweekday(rawdata,scopetype,start,end)
+    fig, ax = plt.subplots()
+    sns.scatterplot(data=frequencytable.dropna().mean(),zorder=10)
+    sns.violinplot(data=frequencytable.dropna(),cut=0)
+    if qtyoftype:
+        ax.set_title(plotfile.split('/')[-1]+'\nNr of scopes: '+str(qtyoftype)+' (Ultimo), '+str(qtyoftypeinlog)+' (Process Manager)\n Date range:'+str(start.date())+' - '+str(end.date()),fontsize=graphfontsize) 
+    else:
+        qtyoftype=qtyoftypeinlog
+        ax.set_title(plotfile.split('/')[-1]+'\nNr of scopes in log: '+str(qtyoftype)+'\n Date range:'+str(start.date())+' - '+str(end.date()),fontsize=graphfontsize)
+    ax.set_ylabel('Use frequency of this type')
+    secax = ax.secondary_yaxis('right', functions=(lambda x: x / qtyoftype, lambda x: x * qtyoftype))
+    secax.set_ylabel('Use frequency per endoscope of this type')
+    plt.savefig(plotfile+'_violin.png')
+    plt.close()
+
 def boxplotuniquescope(rawdata,serialnr,plotfile,start,end):
     start,end=correctdaterange(rawdata[rawdata['Serienr. endoscoop'].isin(serialnr)],start,end)
     frequencytable=freqperweekdayperuniquescope(rawdata,serialnr,start,end)
-    plt.boxplot((frequencytable[0],frequencytable[1],frequencytable[2],frequencytable[3],frequencytable[4],frequencytable[5],frequencytable[6]),showmeans=True,whis='range',zorder=2)
-    plt.xticks( np.arange(1,8), ('Mo','Tu','We','Th','Fr','Sa','Su'))
-    plt.ylabel('Use frequency')
+    fig, ax = plt.subplots()
+    ax.boxplot(frequencytable.dropna(),showmeans=True,whis=[0,100],zorder=2)
+    ax.set_ylabel('Use frequency of this scope')
+    ax.set_xticklabels(frequencytable.columns)
     plt.title(plotfile.split('/')[-1]+'\n'+str(start.date())+' - '+str(end.date()),fontsize=graphfontsize)
     plt.savefig(plotfile+'.png')
     plt.close()
@@ -93,10 +113,11 @@ def boxplotuniquescope(rawdata,serialnr,plotfile,start,end):
 def boxplotperuser(rawdata,scopetype,user,plotfile,start,end):
     start,end=correctdaterange(rawdata[rawdata['Specialistnaam'].isin(user)],start,end)
     frequencytable=freqperweekdayperuser(rawdata,scopetype,user,start,end)
-    if np.max((frequencytable[0],frequencytable[1],frequencytable[2],frequencytable[3],frequencytable[4],frequencytable[5],frequencytable[6]))>0:
-        plt.boxplot((frequencytable[1,0],frequencytable[1,1],frequencytable[1,2],frequencytable[1,3],frequencytable[1,4],frequencytable[1,5],frequencytable[1,6]),showmeans=True,whis='range',zorder=2)
-        plt.xticks( np.arange(1,8), ('Mo','Tu','We','Th','Fr','Sa','Su'))
-        plt.ylabel('Use frequency')
+    if np.max(np.max(frequencytable.dropna()))>0:
+        fig,ax = plt.subplots()
+        ax.boxplot(frequencytable.dropna(),showmeans=True,whis=[0,100],zorder=2)
+        ax.set_ylabel('Use frequency of this scope')
+        ax.set_xticklabels(frequencytable.columns)        
         plt.title(plotfile.split('/')[-1]+'\n'+str(start.date())+' - '+str(end.date()),fontsize=graphfontsize)
         plt.savefig(plotfile+'.png')
         plt.close()

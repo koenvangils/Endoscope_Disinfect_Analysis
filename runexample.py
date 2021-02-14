@@ -20,9 +20,11 @@ if useinventorydata:
         qtyoftype=(len(ultimodump[ultimodump['Typenr.'] == scope]))
         if qtyoftype > 0:
             scopelib.boxplot(rawdata,[scope],str(scope),start,end,qtyoftype)
+            scopelib.violinplot(rawdata,[scope],str(scope),start,end,qtyoftype)
 else:
     for scope in uniquescopes:
         scopelib.boxplot(rawdata,[scope],str(scope),start,end)
+        scopelib.violinplot(rawdata,[scope],str(scope),start,end)
 
 
 ##combine multiple scopes in one boxplot, for example combining comparable scopes.
