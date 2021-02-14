@@ -9,4 +9,4 @@ An example Process Manager file is provided. Run runexample.py to generate the p
 
 The titles of the columns in your Process Manager export file may not be identical to the ones used in this script. If this is the case, change them to the corresponding titles in your export file.
 
-Note: the whiskers of the box plot show the minimum and maximum use frequency, the green triangles show the mean use frequency.
+Note: The whiskers of the box plot show the minimum and maximum use frequency, the orange lines show the median use frequency and the green triangles show the mean use frequency. The white dots in the violin plots show the median use frequency while the blue circles show the mean use frequency.
