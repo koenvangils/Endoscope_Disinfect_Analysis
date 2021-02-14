@@ -35,21 +35,17 @@ def createfrequencytable(daterange,table1,table2,table3):
 def freqperweekday(table,scopetype,start,end):
     table=table[(table.index >= start) & (table.index < end)]
     daterange=pd.date_range(start=start,end=end)
-    table1=table[table['Endoscooptype'].isin(scopetype)]
-    table2=table[table['Endoscooptype 2'].isin(scopetype)]
-    table3=table[table['Endoscooptype 3'].isin(scopetype)]
-    IDsoftypeinlog=table1['Endoscoop ID']
-    IDsoftypeinlog=IDsoftypeinlog.append(table2['Endoscoop ID 2'])
-    IDsoftypeinlog=IDsoftypeinlog.append(table3['Endoscoop ID 3'])  
+    table1, table2, table3 = (table[table[s].isin(scopetype)] for s in ('Endoscooptype','Endoscooptype 2','Endoscooptype 3'))
+    IDsoftypeinlog=table1['Endoscoop ID'].astype('str')
+    IDsoftypeinlog=IDsoftypeinlog.append(table2['Endoscoop ID 2']).astype('str')
+    IDsoftypeinlog=IDsoftypeinlog.append(table3['Endoscoop ID 3']).astype('str')
     frequencytable=createfrequencytable(daterange,table1,table2,table3)
     return frequencytable,IDsoftypeinlog.nunique()
 
-def freqperweekdayperuniquescope(table,serienummer,start,end):
+def freqperweekdayperuniquescope(table,serialnumber,start,end):
     table=table.loc[(table.index >= start) & (table.index < end)]
     daterange=pd.date_range(start=start,end=end)
-    table1=table[table['Serienr. endoscoop'].isin(serienummer)]
-    table2=table[table['Serienr. endoscoop 2'].isin(serienummer)]
-    table3=table[table['Serienr. endoscoop 3'].isin(serienummer)]
+    table1, table2, table3 = (table[table[s].isin(serialnumber)] for s in ('Serienr. endoscoop','Serienr. endoscoop 2','Serienr. endoscoop 3'))
     frequencytable=createfrequencytable(daterange,table1,table2,table3)
     return frequencytable
 
@@ -69,7 +65,7 @@ def boxplot(rawdata,scopetype,plotfile,start,end,qtyoftype=None):
     start,end=correctdaterange(rawdata[rawdata['Endoscooptype'].isin(scopetype)],start,end)
     frequencytable,qtyoftypeinlog=freqperweekday(rawdata,scopetype,start,end)
     fig, ax = plt.subplots()
-    ax.boxplot((np.array(frequencytable[0]), np.array(frequencytable[1]), np.array(frequencytable[2]), np.array(frequencytable[3]), np.array(frequencytable[4]), np.array(frequencytable[5]), np.array(frequencytable[6])),showmeans=True,whis=[0,100],zorder=2)
+    ax.boxplot((frequencytable[0], frequencytable[1], frequencytable[2], frequencytable[3], frequencytable[4], frequencytable[5], frequencytable[6]),showmeans=True,whis=[0,100],zorder=2)
     if qtyoftype:
         ax.set_title(plotfile.split('/')[-1]+'\nNr of scopes: '+str(qtyoftype)+' (Ultimo), '+str(qtyoftypeinlog)+' (Process Manager)\n Date range:'+str(start.date())+' - '+str(end.date()),fontsize=graphfontsize) 
     else:
