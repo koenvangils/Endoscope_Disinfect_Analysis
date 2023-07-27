@@ -30,9 +30,8 @@ def freqperweekday(table,scopetype,year):
     daterange=pd.date_range(start=table['Processtart'].min(),end=table['Processtart'].max())
     table1, table2, table3 = (table[table[s].isin(scopetype)] for s in ('Endoscooptype','Endoscooptype 2','Endoscooptype 3'))
     IDsoftypeinlog=pd.concat([table1['Endoscoop ID'], table2['Endoscoop ID 2'], table3['Endoscoop ID 3']])
-    IDsoftypeinlog.to_excel('test.xlsx')
     frequencytable=createfrequencytable(daterange,table1,table2,table3)
-    return frequencytable,IDsoftypeinlog.nunique()
+    return frequencytable,IDsoftypeinlog.astype(int).nunique()
 
 def boxplot(rawdata,scopetype,plotfile,year,qtyoftype=None):
     frequencytable,qtyoftypeinlog=freqperweekday(rawdata,scopetype,year)
