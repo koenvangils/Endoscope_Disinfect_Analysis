@@ -1,16 +1,14 @@
 import scopelib
 import pandas as pd
-import datetime
 import numpy as np
-import matplotlib.pyplot as plt
 
 useinventorydata=False #Use inventory data for scope quantity (for example an Ultimo export). If false unique scope ID's from process manager export will be used.
 
 #Input data
 rawdata=scopelib.readdata('ProcessList_example.xls')
 #ultimodump=pd.read_excel('Equipment_Instrument.xls', skiprows=1) #Ultimo inventory list scopes
-start = datetime.datetime.strptime('2019-07-01', '%Y-%m-%d') #start date
-end = datetime.datetime.strptime('2020-07-01', '%Y-%m-%d') #end date
+
+year=2020
 
 uniquescopes=pd.unique(rawdata[['Endoscooptype','Endoscooptype 2','Endoscooptype 3']].values.ravel('K'))
 uniquescopes=np.delete(uniquescopes,np.where(uniquescopes=="-")) #Excluding empty values in the raw data (presented as '-'). 
@@ -19,12 +17,10 @@ if useinventorydata:
     for scope in uniquescopes:
         qtyoftype=(len(ultimodump[ultimodump['Typenr.'] == scope]))
         if qtyoftype > 0:
-            scopelib.boxplot(rawdata,[scope],str(scope),start,end,qtyoftype)
-            scopelib.violinplot(rawdata,[scope],str(scope),start,end,qtyoftype)
+            scopelib.boxplot(rawdata,[scope],str(scope),year,qtyoftype)
 else:
     for scope in uniquescopes:
-        scopelib.boxplot(rawdata,[scope],str(scope),start,end)
-        scopelib.violinplot(rawdata,[scope],str(scope),start,end)
+        scopelib.boxplot(rawdata,[scope],str(scope),year)
 
 
 ##combine multiple scopes in one boxplot, for example combining comparable scopes.
